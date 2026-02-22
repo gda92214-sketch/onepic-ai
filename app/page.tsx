@@ -1,101 +1,56 @@
 'use client'
 
 import { useState } from 'react'
-import imageCompression from 'browser-image-compression'
 
 export default function HomePage() {
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
-  const [result, setResult] = useState<string | null>(null)
 
+  // 这里就是你的“家具”清单
   const templates = [
-    { id: 'template1', name: '商务证件照' },
-    { id: 'template2', name: '韩系写真' },url: '/IMG_5998.JPG' },
-    { id: 'template3', name: '电影感大片' }
+    { id: 'template1', name: '商务证件照', url: '/IMG_5998.JPG' },
+    { id: 'template2', name: '韩系写真', url: '' },
+    { id: 'template3', name: '电影感大片', url: '' }
   ]
 
-  async function handleUpload(file: File) {
-    setLoading(true)
-
-    try {
-      // 前端压缩至 2MB 以内
-      const compressed = await imageCompression(file, {
-        maxSizeMB: 2,
-        maxWidthOrHeight: 1920,
-        useWebWorker: true
-      })
-
-      const base64 = await fileToBase64(compressed)
-
-      const res = await fetch('/api/facefusion', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          image: base64,
-          template: selectedTemplate
-        })
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        alert(data.error || '生成失败')
-      } else {
-        setResult(data.image)
-      }
-    } catch (err) {
-      alert('上传失败')
-    }
-
-    setLoading(false)
-  }
-
-  function fileToBase64(file: File): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader()
-      reader.readAsDataURL(file)
-      reader.onload = () => resolve(reader.result as string)
-      reader.onerror = reject
-    })
-  }
-
   return (
-    <main style={{ padding: 40 }}>
-      <h1>OnePic AI 人像融合</h1>
-
-      <div style={{ display: 'flex', gap: 20 }}>
-        {templates.map(t => (
-          <div
-            key={t.id}
-            onClick={() => setSelectedTemplate(t.id)}
-            style={{
-              padding: 20,
-              border: selectedTemplate === t.id ? '2px solid blue' : '1px solid #ccc',
-              cursor: 'pointer'
-            }}
+    <div className="max-w-md mx-auto p-4 bg-gray-50 min-h-screen">
+      <h1 className="text-2xl font-bold mb-6 text-center">AI 写真馆</h1>
+      
+      {/* 模版展示区域：改为网格布局 */}
+      <div className="grid grid-cols-2 gap-4 mb-8">
+        {templates.map((item) => (
+          <div 
+            key={item.id}
+            onClick={() => setSelectedTemplate(item.id)}
+            className={`cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${
+              selectedTemplate === item.id ? 'border-blue-500 shadow-lg' : 'border-white'
+            }`}
           >
-            {t.name}
+            {/* 图片在上：如果 url 为空会显示灰色块 */}
+            <div className="aspect-[3/4] bg-gray-200 relative">
+              {item.url ? (
+                <img src={item.url} alt={item.name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="flex items-center justify-center h-full text-gray-400">暂无图</div>
+              )}
+            </div>
+            {/* 名称在下 */}
+            <div className="p-2 bg-white text-center text-sm font-semibold">
+              {item.name}
+            </div>
           </div>
         ))}
       </div>
 
-      {selectedTemplate && (
-        <div style={{ marginTop: 30 }}>
-          <input
-            type="file"
-            accept="image/*"
-            onChange={e => e.target.files && handleUpload(e.target.files[0])}
-          />
-        </div>
-      )}
-
-      {loading && <p>生成中，请稍候...</p>}
-
-      {result && (
-        <div style={{ marginTop: 30 }}>
-          <img src={result} alt="result" style={{ maxWidth: 400 }} />
-        </div>
-      )}
-    </main>
+      {/* 上传和生成按钮区域 */}
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
+        <p className="text-sm text-gray-500 mb-4 text-center">第一步：选择上方模版</p>
+        <p className="text-sm text-gray-500 mb-4 text-center">第二步：上传你的正面照</p>
+        <input type="file" className="w-full mb-4 text-sm" />
+        <button className="w-full bg-black text-white py-3 rounded-xl font-bold opacity-50 cursor-not-allowed">
+          开始生成写真
+        </button>
+      </div>
+    </div>
   )
 }
