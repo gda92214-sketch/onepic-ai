@@ -9,7 +9,7 @@ export default function HomePage() {
   const [result, setResult] = useState<string | null>(null)
 
   const templates = [
-    { id: 'template1', name: '商务证件照' },
+    { id: 'template1', name: '商务证件照' },url: '/IMG_5998.JPG' },
     { id: 'template2', name: '韩系写真' },
     { id: 'template3', name: '电影感大片' }
   ]
